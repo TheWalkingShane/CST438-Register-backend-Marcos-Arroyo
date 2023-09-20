@@ -22,6 +22,7 @@ CREATE TABLE student (
   PRIMARY KEY (student_id)
 );
 
+
 CREATE TABLE enrollment (
   enrollment_id int NOT NULL AUTO_INCREMENT,
   student_id int  NOT NULL,

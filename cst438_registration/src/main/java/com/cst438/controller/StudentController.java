@@ -20,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.cst438.domain.StudentDTO;
 import com.cst438.domain.Student;
 import com.cst438.domain.StudentRepository;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 @CrossOrigin
@@ -37,18 +38,20 @@ public class StudentController {
             student.getStatus(), student.getStatusCode());
     }
     
-    // Create a new student and return the system generated student_id
+ // Create a new student and return the system generated student_id
     @PostMapping("/student")
     @Transactional  
-    public int createStudent(@RequestBody StudentDTO studentDTO) {
+    public ResponseEntity<Integer> createStudent(@RequestBody StudentDTO studentDTO) {
         Student student = new Student();
         student.setName(studentDTO.name());
         student.setEmail(studentDTO.email());
         student.setStatus(studentDTO.status());
         student.setStatusCode(studentDTO.status_code());
-        studentRepository.save(student);
-        return student.getStudent_id();
+        student = studentRepository.save(student);
+        return new ResponseEntity<>(student.getStudent_id(), HttpStatus.CREATED);
+
     }
+
     
     // Delete a student
     @DeleteMapping("/student/{student_id}")

@@ -30,11 +30,11 @@ public class GradebookServiceREST implements GradebookService {
 	public void enrollStudent(String student_email, String student_name, int course_id) {
 	    System.out.println("Start Message "+ student_email +" " + course_id);
 
-	    // Create the EnrollmentDTO object using the constructor
+	    
 	    EnrollmentDTO enrollmentDTO = new EnrollmentDTO(0, student_email, student_name, course_id);
 
 	    // Send the EnrollmentDTO object as a POST request to the Gradebook backend
-	    String url = gradebook_url + "/enrollment";  // Adjust the endpoint according to the API specification if necessary
+	    String url = gradebook_url + "/enrollment";
 	    restTemplate.postForObject(url, enrollmentDTO, EnrollmentDTO.class);
 	}
 

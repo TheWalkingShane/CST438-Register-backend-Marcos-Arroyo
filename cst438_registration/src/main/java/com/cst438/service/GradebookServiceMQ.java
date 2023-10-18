@@ -14,6 +14,7 @@ import com.cst438.domain.Enrollment;
 import com.cst438.domain.EnrollmentDTO;
 import com.cst438.domain.EnrollmentRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.context.annotation.Bean;
 
 @Service
 @ConditionalOnProperty(prefix = "gradebook", name = "service", havingValue = "mq")
@@ -26,29 +27,40 @@ public class GradebookServiceMQ implements GradebookService {
 	EnrollmentRepository enrollmentRepository;
 	
 	Queue gradebookQueue = new Queue("gradebook-queue", true);
-
+	
+    @Bean
+    Queue createQueue() {
+        return new Queue("registration-queue");
+    }
+    
 	// send message to grade book service about new student enrollment in course
 	@Override
 	public void enrollStudent(String student_email, String student_name, int course_id) {
-		System.out.println("Start Message "+ student_email +" " + course_id); 
-		// create EnrollmentDTO, convert to JSON string and send to gradebookQueue
-		// TODO
+	    System.out.println("Start Message "+ student_email +" " + course_id); 
+	    EnrollmentDTO enrollmentDTO = new EnrollmentDTO(0, student_email, student_name, course_id);
+	    String message = asJsonString(enrollmentDTO);
+	    rabbitTemplate.convertAndSend(gradebookQueue.getName(), message);
 	}
+
 	
 	@RabbitListener(queues = "registration-queue")
 	@Transactional
 	public void receive(String message) {
-		System.out.println("Receive grades :" + message);
-		/*
-		 * for each student grade in courseDTOG,  find the student enrollment 
-		 * entity and update the grade.
-		 */
-		
-		// deserialize the string message to FinalGradeDTO[] 
-		
-		// TODO
-
+	    System.out.println("Receive grades :" + message);
+	    
+	    FinalGradeDTO[] finalGrades = fromJsonString(message, FinalGradeDTO[].class);
+	    
+	    for (FinalGradeDTO gradeDTO : finalGrades) {
+	        Enrollment enrollment = enrollmentRepository.findByEmailAndCourseId(gradeDTO.studentEmail(), gradeDTO.courseId());
+	        if (enrollment != null) {
+	            enrollment.setCourseGrade(gradeDTO.grade());
+	            enrollmentRepository.save(enrollment);
+	        } else {
+	            System.out.println("No enrollment found for student " + gradeDTO.studentEmail() + " in course " + gradeDTO.courseId());
+	        }
+	    }
 	}
+
 	
 	private static String asJsonString(final Object obj) {
 		try {

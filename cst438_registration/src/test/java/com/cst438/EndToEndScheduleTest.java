@@ -65,6 +65,8 @@ public class EndToEndScheduleTest {
 	@Test
 	public void addCourseTest() throws Exception {
 
+		
+
 	
 		// set the driver location and start driver
 		//@formatter:off
@@ -138,4 +140,5 @@ public class EndToEndScheduleTest {
 		}
 
 	}
+	
 }
